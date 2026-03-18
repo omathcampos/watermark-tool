@@ -1,15 +1,8 @@
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-*.egg-info/
-dist/
-build/
-
 # Node
 node_modules/
 dist/
+dist-ssr/
+*.local
 .DS_Store
 
 # Env
@@ -19,3 +12,9 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# Vercel
+.vercel
+
+# Backend (not used — processing is client-side)
+backend/
