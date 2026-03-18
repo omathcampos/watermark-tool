@@ -5,6 +5,8 @@ export interface Config {
   opacity: number;
   scale: number;
   margin: number;
+  prefix: string;
+  suffix: string;
 }
 
 interface Props {
@@ -75,6 +77,34 @@ export default function ConfigPanel({ config, onChange }: Props) {
         display={`${config.margin}px`}
         onChange={(v) => set("margin", v)}
       />
+
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+          Nome do arquivo
+        </label>
+        <div className="flex items-center gap-1 text-sm">
+          <input
+            type="text"
+            placeholder="prefixo_"
+            value={config.prefix}
+            onChange={(e) => set("prefix", e.target.value)}
+            className="w-24 bg-zinc-800 rounded-lg px-2 py-1.5 text-zinc-300 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-violet-500"
+          />
+          <span className="text-zinc-500 shrink-0">nome</span>
+          <input
+            type="text"
+            placeholder="_sufixo"
+            value={config.suffix}
+            onChange={(e) => set("suffix", e.target.value)}
+            className="w-24 bg-zinc-800 rounded-lg px-2 py-1.5 text-zinc-300 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-violet-500"
+          />
+        </div>
+        {(config.prefix || config.suffix) && (
+          <p className="text-xs text-zinc-500 font-mono">
+            ex: {config.prefix || ""}foto.jpg{config.suffix || ""}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

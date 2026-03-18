@@ -11,6 +11,8 @@ const DEFAULT_CONFIG: Config = {
   opacity: 0.8,
   scale: 0.2,
   margin: 20,
+  prefix: "",
+  suffix: "_wm",
 };
 
 type Status = "idle" | "processing" | "done" | "error";
@@ -48,7 +50,8 @@ export default function App() {
         const blob = await processImage(images[i], watermark!, config);
         const isJpeg = images[i].type === "image/jpeg";
         const baseName = images[i].name.replace(/\.[^.]+$/, "");
-        results.push({ blob, filename: `${baseName}.${isJpeg ? "jpg" : "png"}` });
+        const filename = `${config.prefix}${baseName}${config.suffix}.${isJpeg ? "jpg" : "png"}`;
+        results.push({ blob, filename });
         setProgress(Math.round(((i + 1) / images.length) * 100));
       }
 
