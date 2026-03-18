@@ -25,6 +25,15 @@ export default function App() {
 
   const canProcess = images.length > 0 && watermark !== null;
 
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleProcess = async () => {
     if (!canProcess) return;
 
@@ -33,23 +42,43 @@ export default function App() {
     setErrorMsg(null);
 
     try {
-      const zip = new JSZip();
-
+      // Process all images
+      const results: { blob: Blob; filename: string }[] = [];
       for (let i = 0; i < images.length; i++) {
         const blob = await processImage(images[i], watermark!, config);
         const isJpeg = images[i].type === "image/jpeg";
         const baseName = images[i].name.replace(/\.[^.]+$/, "");
-        zip.file(`${baseName}.${isJpeg ? "jpg" : "png"}`, blob);
+        results.push({ blob, filename: `${baseName}.${isJpeg ? "jpg" : "png"}` });
         setProgress(Math.round(((i + 1) / images.length) * 100));
       }
 
+      // Single image: direct download
+      if (results.length === 1) {
+        downloadBlob(results[0].blob, results[0].filename);
+        setStatus("done");
+        setTimeout(() => setStatus("idle"), 2000);
+        return;
+      }
+
+      // Multiple images on mobile: try Web Share API
+      const canShare = typeof navigator.share === "function" && navigator.canShare;
+      if (canShare) {
+        const files = results.map(
+          (r) => new File([r.blob], r.filename, { type: r.blob.type })
+        );
+        if (navigator.canShare({ files })) {
+          await navigator.share({ files, title: "Imagens com marca d'água" });
+          setStatus("done");
+          setTimeout(() => setStatus("idle"), 2000);
+          return;
+        }
+      }
+
+      // Fallback: zip download
+      const zip = new JSZip();
+      results.forEach(({ blob, filename }) => zip.file(filename, blob));
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      const url = URL.createObjectURL(zipBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "watermarked.zip";
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(zipBlob, "watermarked.zip");
 
       setStatus("done");
       setTimeout(() => setStatus("idle"), 2000);
