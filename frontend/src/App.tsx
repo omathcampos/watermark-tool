@@ -61,7 +61,8 @@ export default function App() {
       }
 
       // Multiple images on mobile: try Web Share API
-      const canShare = typeof navigator.share === "function" && navigator.canShare;
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const canShare = isMobile && typeof navigator.share === "function" && navigator.canShare;
       if (canShare) {
         const files = results.map(
           (r) => new File([r.blob], r.filename, { type: r.blob.type })
