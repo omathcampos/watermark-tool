@@ -1,8 +1,10 @@
 import { useState } from "react";
+import JSZip from "jszip";
 import FileDropzone from "./components/FileDropzone";
 import WatermarkPicker from "./components/WatermarkPicker";
 import ConfigPanel, { type Config } from "./components/ConfigPanel";
 import Preview from "./components/Preview";
+import { processImage } from "./processImage";
 
 const DEFAULT_CONFIG: Config = {
   position: "bottom-right",
@@ -30,42 +32,28 @@ export default function App() {
     setProgress(0);
     setErrorMsg(null);
 
-    const form = new FormData();
-    images.forEach((img) => form.append("images", img));
-    form.append("watermark", watermark!);
-    form.append("position", config.position);
-    form.append("opacity", String(config.opacity));
-    form.append("scale", String(config.scale));
-    form.append("margin", String(config.margin));
-
-    const interval = setInterval(() => {
-      setProgress((p) => Math.min(p + 5, 90));
-    }, 300);
-
     try {
-      const res = await fetch("/api/process", { method: "POST", body: form });
+      const zip = new JSZip();
 
-      clearInterval(interval);
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail ?? "Erro ao processar imagens");
+      for (let i = 0; i < images.length; i++) {
+        const blob = await processImage(images[i], watermark!, config);
+        const isJpeg = images[i].type === "image/jpeg";
+        const baseName = images[i].name.replace(/\.[^.]+$/, "");
+        zip.file(`${baseName}.${isJpeg ? "jpg" : "png"}`, blob);
+        setProgress(Math.round(((i + 1) / images.length) * 100));
       }
 
-      setProgress(100);
-      setStatus("done");
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
       const a = document.createElement("a");
       a.href = url;
       a.download = "watermarked.zip";
       a.click();
       URL.revokeObjectURL(url);
 
+      setStatus("done");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (err) {
-      clearInterval(interval);
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Erro desconhecido");
     }
