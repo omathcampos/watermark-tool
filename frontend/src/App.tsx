@@ -52,7 +52,20 @@ export default function App() {
         setProgress(Math.round(((i + 1) / images.length) * 100));
       }
 
-      // Single image: direct download
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const files = results.map(
+        (r) => new File([r.blob], r.filename, { type: r.blob.type })
+      );
+
+      // Mobile: Web Share API (salva na galeria via menu nativo)
+      if (isMobile && typeof navigator.share === "function" && navigator.canShare?.({ files })) {
+        await navigator.share({ files, title: "Imagens com marca d'água" });
+        setStatus("done");
+        setTimeout(() => setStatus("idle"), 2000);
+        return;
+      }
+
+      // Desktop, 1 imagem: download direto
       if (results.length === 1) {
         downloadBlob(results[0].blob, results[0].filename);
         setStatus("done");
@@ -60,22 +73,7 @@ export default function App() {
         return;
       }
 
-      // Multiple images on mobile: try Web Share API
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const canShare = isMobile && typeof navigator.share === "function" && navigator.canShare;
-      if (canShare) {
-        const files = results.map(
-          (r) => new File([r.blob], r.filename, { type: r.blob.type })
-        );
-        if (navigator.canShare({ files })) {
-          await navigator.share({ files, title: "Imagens com marca d'água" });
-          setStatus("done");
-          setTimeout(() => setStatus("idle"), 2000);
-          return;
-        }
-      }
-
-      // Fallback: zip download
+      // Desktop, múltiplas imagens: zip
       const zip = new JSZip();
       results.forEach(({ blob, filename }) => zip.file(filename, blob));
       const zipBlob = await zip.generateAsync({ type: "blob" });
