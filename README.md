@@ -1,36 +1,22 @@
 # 💧 Watermark Tool
 
-Ferramenta web para adicionar marca d'água em imagens de forma simples e sem perda de qualidade.
+Ferramenta web para adicionar marca d'água em imagens de forma simples, sem perda de qualidade e sem precisar instalar nada.
+
+**[watermark-tool-mathe.vercel.app](https://watermark-tool-mathe.vercel.app)**
 
 ## Funcionalidades
 
-- Upload de múltiplas imagens (JPG, PNG, WebP)
+- Drag & drop de múltiplas imagens (JPG, PNG, WebP)
 - Marca d'água com imagem customizada (PNG com transparência recomendado)
 - Controle de posição, opacidade, tamanho e margem
+- Nome do arquivo de saída configurável (prefixo e sufixo)
 - Preview em tempo real
-- Processamento em massa com download em `.zip`
+- Processamento 100% no browser — nenhum dado sai do seu dispositivo
 - Sem perda de qualidade (PNG lossless, JPEG quality 95)
+- **Desktop:** download direto (1 imagem) ou `.zip` (múltiplas)
+- **Mobile:** menu nativo de compartilhamento para salvar na galeria
 
-## Como rodar
-
-### Pré-requisitos
-
-- Python 3.11+
-- Node.js 18+
-
-### Backend
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-O servidor sobe em `http://localhost:8000`.
-
-### Frontend
+## Rodando localmente
 
 ```bash
 cd frontend
@@ -42,8 +28,9 @@ Abra `http://localhost:5173`.
 
 ## Stack
 
-| Camada   | Tech                    |
-|----------|-------------------------|
-| Frontend | React + Vite + TypeScript + Tailwind CSS |
-| Backend  | Python + FastAPI        |
-| Imagens  | Pillow                  |
+| | Tech |
+|---|---|
+| Frontend | React + Vite + TypeScript |
+| Estilo | Tailwind CSS |
+| Imagens | Canvas API + JSZip |
+| Deploy | Vercel |
